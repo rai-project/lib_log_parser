@@ -10,12 +10,17 @@ import (
 	"github.com/k0kubun/pp"
 )
 
+var (
+	simpleTestData  string
+	alexnetTestData string
+)
+
 func readSimpleData() {
 	bts, err := ioutil.ReadFile(filepath.Join(sourcepath.MustAbsoluteDir(), "_fixtures", "simple.log"))
 	if err != nil {
 		panic(err)
 	}
-	simpleTest = string(bts)
+	simpleTestData = string(bts)
 }
 
 func readAlexNetCUDNNData() {
@@ -23,7 +28,7 @@ func readAlexNetCUDNNData() {
 	if err != nil {
 		panic(err)
 	}
-	simpleTest = string(bts)
+	alexnetTestData = string(bts)
 }
 
 func readData() {

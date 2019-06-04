@@ -7,17 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var simpleTest string
-
-func TestParse(t *testing.T) {
-	info, err := Parse(simpleTest)
+func DISABLED_TestParse(t *testing.T) {
+	info, err := Parse(simpleTestData)
 	assert.NoError(t, err)
 
 	pp.Println(info)
 }
 
 func TestParseToCSV(t *testing.T) {
-	info, err := Parse(simpleTest)
+	info, err := Parse(alexnetTestData)
 	assert.NoError(t, err)
 
 	info.ToCSV("_fixtures/alexnet_cudnn.csv")

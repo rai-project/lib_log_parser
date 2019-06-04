@@ -46,6 +46,7 @@ func parseTimeStamp(line string) (time.Time, error) {
 
 	params := getRegexParams(`i!\s+Time:\s+(?P<time>[\d-:T.]+)+\s+.*`, line)
 	if t, ok := params["time"]; ok {
+		// 2019-06-04T18:01:43.967769
 		return time.Parse("2006-01-02T15:04:05.999999999", t)
 	}
 
