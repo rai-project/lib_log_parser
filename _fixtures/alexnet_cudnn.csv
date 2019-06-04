@@ -951,8 +951,7 @@ cudnnDestroyTensorDescriptor,11,2019-06-04T06:44:33.726054Z
 cudnnDestroyFilterDescriptor,15,2019-06-04T06:44:33.726069Z
 cudnnDestroyConvolutionDescriptor,16,2019-06-04T06:44:33.726085Z
 cudnnDestroyConvolutionDescriptor,15,2019-06-04T06:44:33.7261Z
-cudnnDestroyConvolutionDescriptor,21,2019-06-04T06:44:33.726121Z
-T06:44:33.579676Z
+cudnnDestroyConvolutionDescriptor,21,2019-06-04T06:44:33.726121ZT06:44:33.579676Z
 cudnnConvolutionForward,57000000,2019-06-04T06:44:33.579733Z
 cudnnAddTensor,101000000,2019-06-04T06:44:33.579834Z
 cudnnSetTensor4dDescriptor,76000000,2019-06-04T06:44:33.57991Z
