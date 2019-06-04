@@ -1,14 +1,16 @@
 package cudnn_log_parser
 
 import (
-	"fmt"
 	"io/ioutil"
-	"regexp"
+	"os"
+	"path"
 	"strings"
+	"time"
 
-	"gopkg.in/yaml.v2"
+	"github.com/gocarina/gocsv"
 
 	"github.com/Unknwon/com"
+	"github.com/cydev/zero"
 	"github.com/pkg/errors"
 )
 
@@ -24,40 +26,91 @@ func indent(n int) string {
 	return string(s)
 }
 
-func processLine(line string) {
-	indentN := indentOf(line)
-	if strings.HasPrefix(line, "I! ") {
-		re := regexp.MustCompile(`I!.*function\s+(\w+)\(.*`)
-		for i, match := range re.FindAllString(line, -1) {
-			return indent(indentN) + match + ":"
-		}
+func parseFunctionName(line string) (string, error) {
+	if !strings.HasPrefix(line, "I! CuDNN") {
+		return "", errors.New("not a function line")
 	}
 
-	var re = regexp.MustCompile(`(?m)i!\s+(.*):\s((.*)=(.*);)*`)
-	for i, match := range re.FindAllString(line, -1) {
-		fmt.Println(match, "found at index", i)
+	params := getRegexParams(`I!.*function\s+(?P<functionName>\w+)\(.*`, line)
+	if f, ok := params["functionName"]; ok {
+		return f, nil
 	}
+
+	return "", errors.New("cannot find function")
 }
 
-func toYaml(log string) ([]byte, error) {
+func parseTimeStamp(line string) (time.Time, error) {
+	if !strings.HasPrefix(line, "i! Time") {
+		return time.Time{}, errors.New("not a function line")
+	}
+
+	params := getRegexParams(`i!\s+Time:\s+(?P<time>[\d-:T.]+)+\s+.*`, line)
+	if t, ok := params["time"]; ok {
+		return time.Parse("2006-01-02T15:04:05.999999999", t)
+	}
+
+	return time.Time{}, errors.New("cannot find time")
+}
+
+func processLine(info *Info, line string) {
+	// indentN := indentOf(line)
+
+	if t, err := parseTimeStamp(line); err == nil {
+		info.TimeStamp = t
+	}
+
+	if f, err := parseFunctionName(line); err == nil {
+		info.FunctionName = f
+	}
+
+	// var re = regexp.MustCompile(`(?m)i!\s+(.*):\s((.*)=(.*);)*`)
+	// for i, match := range re.FindAllString(line, -1) {
+	// 	fmt.Println(match, "found at index", i)
+	// }
+}
+
+func toInfos(log string) (Infos, error) {
 	lines := strings.Split(log, "\n")
-	for ii, line := range lines {
-		line = processLine(line)
+	infos := make([]Info, 0, len(lines))
+	var currentInfo Info
+	for _, line := range lines {
+		if strings.HasPrefix(line, "I! CuDNN") && !zero.IsZero(currentInfo) {
+			infos = append(infos, currentInfo)
+		}
+		processLine(&currentInfo, line)
 	}
-	return strings.Join(lines, "\n")
+	infos = append(infos, currentInfo)
+	return infos, nil
 }
 
-func Parse(log string) (*Info, error) {
-	bts, err := toYaml(log)
+func (infos0 *Infos) computeDurations() {
+	infos := *infos0
+	for ii := 1; ii < len(infos); ii++ {
+		infos[ii].Duration = Duration(infos[ii].TimeStamp.Sub(infos[ii-1].TimeStamp))
+	}
+	infos = infos[1:]
+}
+
+func (infos Infos) ToCSV(filename string) error {
+	os.MkdirAll(path.Dir(filename), os.ModePerm)
+	cvsFile, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot parse into yaml")
+		panic(err)
 	}
-	info := new(Info)
-	err = yaml.Unmashal(bts, info)
-	return info, err
+	defer cvsFile.Close()
+	return gocsv.MarshalFile(infos, cvsFile)
 }
 
-func ParseFile(file string) (*Info, error) {
+func Parse(log string) (Infos, error) {
+	infos, err := toInfos(log)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot parse into infos")
+	}
+	infos.computeDurations()
+	return infos, err
+}
+
+func ParseFile(file string) ([]Info, error) {
 	if !com.IsFile(file) {
 		return nil, errors.Errorf("unable to find %v", file)
 	}
