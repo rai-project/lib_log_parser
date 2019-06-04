@@ -16,5 +16,5 @@ type Info struct {
 type Infos []Info
 
 func (dur *Duration) MarshalCSV() (string, error) {
-	return fmt.Sprintf("%v", int64(time.Duration(*dur)*time.Millisecond)), nil
+	return fmt.Sprintf("%v", float64(time.Duration(*dur))/float64(time.Microsecond)), nil
 }
