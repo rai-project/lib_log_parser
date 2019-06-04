@@ -6,12 +6,11 @@ import (
 	"regexp"
 	"strings"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/Unknwon/com"
 	"github.com/pkg/errors"
 )
-
-type Info struct {
-}
 
 func indent(n int) string {
 	if n == 0 {
@@ -20,7 +19,7 @@ func indent(n int) string {
 
 	s := make([]byte, n)
 	for ii := range s {
-		s[ii] = " "
+		s[ii] = ' '
 	}
 	return string(s)
 }
@@ -40,7 +39,7 @@ func processLine(line string) {
 	}
 }
 
-func toYaml(log string) {
+func toYaml(log string) ([]byte, error) {
 	lines := strings.Split(log, "\n")
 	for ii, line := range lines {
 		line = processLine(line)
@@ -50,7 +49,12 @@ func toYaml(log string) {
 
 func Parse(log string) (*Info, error) {
 	bts, err := toYaml(log)
-	return nil, nil
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot parse into yaml")
+	}
+	info := new(Info)
+	err = yaml.Unmashal(bts, info)
+	return info, err
 }
 
 func ParseFile(file string) (*Info, error) {
