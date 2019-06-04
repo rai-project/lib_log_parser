@@ -1,0 +1,38 @@
+I! CuDNN (v7501) function cudnnConvolutionForward() called:
+i!     handle: type=cudnnHandle_t; streamId=0x7f86f00083d0;
+i!     alpha: type=CUDNN_DATA_FLOAT; val=1.000000;
+i!     xDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,32,112,112];
+i!         strideA: type=int; val=[401408,12544,112,1];
+i!     xData: location=dev; addr=0x12116e0000;
+i!     wDesc: type=cudnnFilterDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         vect: type=int; val=0;
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[32,32,3,3];
+i!         format: type=cudnnTensorFormat_t; val=CUDNN_TENSOR_NCHW (0);
+i!     wData: location=dev; addr=0x1212cbc000;
+i!     convDesc: type=cudnnConvolutionDescriptor_t:
+i!         mode: type=cudnnConvolutionMode_t; val=CUDNN_CROSS_CORRELATION (1);
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         mathType: type=cudnnMathType_t; val=CUDNN_DEFAULT_MATH (0);
+i!         arrayLength: type=int; val=2;
+i!         padA: type=int; val=[1,1];
+i!         strideA: type=int; val=[1,1];
+i!         dilationA: type=int; val=[1,1];
+i!         groupCount: type=int; val=1;
+i!     algo: type=cudnnConvolutionFwdAlgo_t; val=CUDNN_CONVOLUTION_FWD_ALGO_GEMM (2);
+i!     workSpace: location=dev; addr=0x1213380000;
+i!     workSpaceSizeInBytes: type=size_t; val=14450692;
+i!     beta: type=CUDNN_DATA_FLOAT; val=0.000000;
+i!     yDesc: type=cudnnTensorDescriptor_t:
+i!         dataType: type=cudnnDataType_t; val=CUDNN_DATA_FLOAT (0);
+i!         nbDims: type=int; val=4;
+i!         dimA: type=int; val=[1,32,112,112];
+i!         strideA: type=int; val=[401408,12544,112,1];
+i!     yData: location=dev; addr=0x12131e0000;
+i! Time: 2019-05-25T03:46:19.357424 (0d+0h+0m+3s since start)
+i! Process=10632; Thread=10690; GPU=0; Handle=0x7f86ed507e80; StreamId=0x7f86f00083d0.
+
