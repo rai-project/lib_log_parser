@@ -86,8 +86,10 @@ func toInfos(log string) (Infos, error) {
 
 func (infos0 *Infos) computeDurations() {
 	infos := *infos0
-	for ii := 1; ii < len(infos); ii++ {
-		infos[ii].Duration = Duration(infos[ii].TimeStamp.Sub(infos[ii-1].TimeStamp))
+	for ii := 0; ii < len(infos)-1; ii++ {
+		nextTimeStamp := infos[ii+1].TimeStamp
+		currTimeStamp := infos[ii].TimeStamp
+		infos[ii].Duration = Duration(nextTimeStamp.Sub(currTimeStamp))
 	}
 	infos = infos[1:]
 }
