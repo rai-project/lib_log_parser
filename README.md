@@ -1,5 +1,9 @@
 # cudnn_log_parser
 
+Example input = [alexnet_cudnn.log](https://github.com/rai-project/cudnn_log_parser/blob/master/_fixtures/alexnet_cudnn.log)
+
+Example output = [alexnet_cudnn.csv](https://github.com/rai-project/cudnn_log_parser/blob/master/_fixtures/alexnet_cudnn.csv)
+
 
 
 ### Run with cublas logging
