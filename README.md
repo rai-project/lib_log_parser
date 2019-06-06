@@ -26,3 +26,8 @@ CUDNN_LOGINFO_DBG=1 CUDNN_LOGDEST_DBG=cudnn.log prog
 ```
 $ CUBLAS_LOGINFO_DBG=1 CUBLAS_LOGDEST_DBG=cublas.log CUDNN_LOGINFO_DBG=1 CUDNN_LOGDEST_DBG=cudnn.log prog
 ```
+
+
+### MKL
+
+https://github.com/intel/mkl-dnn/blob/master/doc/performance_considerations/verbose.md
