@@ -1,9 +1,11 @@
 package cudnn_log_parser
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -90,13 +92,31 @@ func processNest(info *Info, log string) {
 	// if err := copier.Copy(procesedLines, lines); err != nil {
 	//   panic("unable to copy lines")
 	// }
+	endOfLineColonRe := regexp.MustCompile(`(?m).*:.*:$`)
+	typeAssignmentRe := regexp.MustCompile(`(?m)\s+type=`)
 	processedLines := []string{}
 	for _, line := range lines {
 		indentN := indentOf(line)
 		nextIndent := "\n" + indent(indentN+1)
-		line = strings.ReplaceAll(line, ":", ":"+nextIndent)
-		line = strings.ReplaceAll(line, "=", ": ")
-		line = strings.ReplaceAll(line, ";", nextIndent)
+
+		if endOfLineColonRe.MatchString(line) {
+			line = strings.TrimSuffix(line, ":")
+		}
+		if typeAssignmentRe.MatchString(line) {
+			line = typeAssignmentRe.ReplaceAllString(line, nextIndent+"type: ")
+		} else {
+			line = strings.ReplaceAll(line, ":", ":"+nextIndent)
+		}
+		if false {
+			if endOfLineColonRe.MatchString(line) {
+				line = strings.TrimSuffix(line, ":")
+				// line = strings.ReplaceAll(line, " type=", "type: ")
+				fmt.Println(line)
+				fmt.Println("----------------------")
+			}
+			line = strings.ReplaceAll(line, "=", ": ")
+			line = strings.ReplaceAll(line, ";", nextIndent)
+		}
 		for _, newLine := range strings.Split(line, "\n") {
 			if strings.TrimSpace(newLine) == "" {
 				continue
