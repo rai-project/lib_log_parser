@@ -19644,4 +19644,3 @@ i! Process=18690; Thread=18798; GPU=NULL; Handle=NULL; StreamId=NULL.
 I! CuDNN (v7501) function cudnnDestroyConvolutionDescriptor() called:
 i! Time: 2019-06-04T18:09:16.025461 (0d+0h+0m+6s since start)
 i! Process=18690; Thread=18798; GPU=NULL; Handle=NULL; StreamId=NULL.
-

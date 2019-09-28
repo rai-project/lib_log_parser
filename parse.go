@@ -7,12 +7,17 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/gocarina/gocsv"
+	"github.com/k0kubun/pp"
 
 	"github.com/Unknwon/com"
 	"github.com/cydev/zero"
 	"github.com/pkg/errors"
 )
+
+var verboseDebug = false
 
 func indent(n int) string {
 	if n == 0 {
@@ -58,10 +63,12 @@ func processLine(info *Info, line string) {
 
 	if t, err := parseTimeStamp(line); err == nil {
 		info.TimeStamp = t
+		return
 	}
 
 	if f, err := parseFunctionName(line); err == nil {
 		info.FunctionName = f
+		return
 	}
 
 	// var re = regexp.MustCompile(`(?m)i!\s+(.*):\s((.*)=(.*);)*`)
@@ -70,15 +77,67 @@ func processLine(info *Info, line string) {
 	// }
 }
 
+var indentattion = "     "
+var nestIndentation = "i!" + indentattion
+
+func processNest(info *Info, log string) {
+	lines := strings.Split(log, "\n")
+	for ii, line := range lines {
+		lines[ii] = strings.TrimPrefix(line, nestIndentation)
+	}
+	// procesedLines := []string{}
+	// if err := copier.Copy(procesedLines, lines); err != nil {
+	//   panic("unable to copy lines")
+	// }
+	processedLines := []string{}
+	for _, line := range lines {
+		indentN := indentOf(line)
+		nextIndent := "\n" + indent(indentN+1)
+		line = strings.ReplaceAll(line, ":", ":"+nextIndent)
+		line = strings.ReplaceAll(line, "=", ": ")
+		line = strings.ReplaceAll(line, ";", nextIndent)
+		for _, newLine := range strings.Split(line, "\n") {
+			if strings.TrimSpace(newLine) == "" {
+				continue
+			}
+			processedLines = append(processedLines, newLine)
+		}
+	}
+	ymlBlock := strings.Join(processedLines, "\n")
+	attributes := new(Attributes)
+	err := yaml.Unmarshal([]byte(ymlBlock), &attributes)
+	if err != nil {
+		print(ymlBlock)
+		panic(err)
+	}
+	if verboseDebug {
+		pp.Println(attributes)
+		yml, err := yaml.Marshal(&attributes)
+		if err != nil {
+			panic(err)
+		}
+		print(string(yml))
+	}
+	info.Attributes = attributes
+}
+
 func toInfos(log string) (Infos, error) {
 	lines := strings.Split(log, "\n")
+	nst := ""
 	infos := make([]Info, 0, len(lines))
 	var currentInfo Info
 	for _, line := range lines {
 		if strings.HasPrefix(line, "I! CuDNN") && !zero.IsZero(currentInfo) {
 			infos = append(infos, currentInfo)
 		}
-		processLine(&currentInfo, line)
+		if !strings.HasPrefix(line, nestIndentation) {
+			processLine(&currentInfo, line)
+			continue
+		}
+		nst += line + "\n"
+	}
+	if nst != "" {
+		processNest(&currentInfo, nst)
 	}
 	infos = append(infos, currentInfo)
 	return infos, nil
@@ -95,6 +154,7 @@ func (infos0 *Infos) computeDurations() {
 }
 
 func (infos Infos) ToCSV(filename string) error {
+	print(filename)
 	os.MkdirAll(path.Dir(filename), os.ModePerm)
 	cvsFile, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
@@ -104,13 +164,34 @@ func (infos Infos) ToCSV(filename string) error {
 	return gocsv.MarshalFile(infos, cvsFile)
 }
 
-func Parse(log string) (Infos, error) {
+func ParseBlock(log string) (Infos, error) {
 	infos, err := toInfos(log)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot parse into infos")
 	}
 	infos.computeDurations()
 	return infos, err
+}
+
+func Parse(log string) (Infos, error) {
+	lines := strings.Split(log, "\n")
+	var infos Infos
+	buf := ""
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "" && buf != "" {
+			blk, err := toInfos(buf)
+			if err != nil {
+				return nil, errors.Wrap(err, "cannot parse into infos")
+			}
+			infos = append(infos, blk...)
+			buf = ""
+			continue
+		}
+		buf += line + "\n"
+	}
+
+	infos.computeDurations()
+	return infos, nil
 }
 
 func ParseFile(file string) ([]Info, error) {
