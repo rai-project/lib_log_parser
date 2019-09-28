@@ -14,6 +14,7 @@ type Duration time.Duration
 type Attributes map[string]interface{}
 
 type Info struct {
+	FunctionKind string      `csv:"function_kind" json:"function_kind,omitempty" yaml:"function_kind,omitempty"`
 	FunctionName string      `csv:"function_name" json:"function_name,omitempty" yaml:"function_name,omitempty"`
 	Duration     Duration    `csv:"duration_ms"  json:"duration,omitempty" yaml:"duration,omitempty"`
 	TimeStamp    time.Time   `csv:"time_stamp" json:"time_stamp,omitempty" yaml:"time_stamp,omitempty"`
@@ -37,13 +38,14 @@ func (attrs0 *Attributes) MarshalJSON() ([]byte, error) {
 		jsonValue := []byte("<<ERROR>>")
 		switch value := value.(type) {
 		case map[interface{}]interface{}:
-			mp := map[string]interface{}{}
+			mp := make(Attributes)
 			for k, v := range value {
 				mp[cast.ToString(k)] = v
 			}
-			jsonValue, err = json.Marshal(mp)
+			// pp.Println(mp)
+			jsonValue, err = json.Marshal(&mp)
 			if err != nil {
-				pp.Println(err)
+				panic(err)
 				return nil, err
 			}
 		default:
@@ -64,8 +66,7 @@ func (attrs0 *Attributes) MarshalJSON() ([]byte, error) {
 }
 
 func (attrs *Attributes) MarshalCSV() (string, error) {
-	bts, err := attrs.MarshalJSON()
-	print(string(bts))
+	bts, err := json.Marshal(attrs)
 	if err != nil {
 		panic(err)
 		return "", err

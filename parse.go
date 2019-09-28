@@ -27,7 +27,7 @@ func indent(n int) string {
 		return ""
 	}
 
-	s := make([]byte, n)
+	s := make([]byte, 2*n)
 	for ii := range s {
 		s[ii] = ' '
 	}
@@ -70,6 +70,7 @@ func processLine(info *Info, line string) {
 	}
 
 	if f, err := parseFunctionName(line); err == nil {
+		info.FunctionKind = strings.TrimPrefix(f, "cudnn")
 		info.FunctionName = f
 		return
 	}
@@ -102,12 +103,21 @@ func processNest(info *Info, log string) {
 		if endOfLineColonRe.MatchString(line) {
 			line = strings.TrimSuffix(line, ":")
 		}
-		if typeAssignmentRe.MatchString(line) {
-			line = typeAssignmentRe.ReplaceAllString(line, nextIndent+"type: ")
-		} else {
-			line = strings.ReplaceAll(line, ":", ":"+nextIndent)
+		if strings.Contains(line, ": ") {
+			line = strings.ReplaceAll(line, ": ", ": {") + "}"
 		}
+		if indentN == 0 {
+			line = strings.ReplaceAll(line, ": {", ":"+nextIndent+indent(indentN+1)+"opinfo: {")
+		}
+		line = strings.ReplaceAll(line, "=", ": ")
+		line = strings.ReplaceAll(line, ";", ", ")
+		line = strings.ReplaceAll(line, ", }", " }")
 		if false {
+			if typeAssignmentRe.MatchString(line) {
+				line = typeAssignmentRe.ReplaceAllString(line, nextIndent+"type: ")
+			} else {
+				line = strings.ReplaceAll(line, ":", ":"+nextIndent)
+			}
 			if endOfLineColonRe.MatchString(line) {
 				line = strings.TrimSuffix(line, ":")
 				// line = strings.ReplaceAll(line, " type=", "type: ")
@@ -125,11 +135,11 @@ func processNest(info *Info, log string) {
 		}
 	}
 	ymlBlock := strings.Join(processedLines, "\n")
+	// clipboard.WriteAll(ymlBlock)
 	attributes := new(Attributes)
 	err := yaml.Unmarshal([]byte(ymlBlock), &attributes)
 	if err != nil {
 		clipboard.WriteAll(ymlBlock)
-		print(ymlBlock)
 		panic(err)
 	}
 	if verboseDebug {
@@ -138,7 +148,7 @@ func processNest(info *Info, log string) {
 		if err != nil {
 			panic(err)
 		}
-		print(string(yml))
+		_ = yml
 	}
 	info.Attributes = attributes
 }
@@ -176,7 +186,6 @@ func (infos0 *Infos) computeDurations() {
 }
 
 func (infos Infos) ToCSV(filename string) error {
-	print(filename)
 	os.MkdirAll(path.Dir(filename), os.ModePerm)
 	cvsFile, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
