@@ -9,6 +9,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
+	"github.com/atotto/clipboard"
 	"github.com/gocarina/gocsv"
 	"github.com/k0kubun/pp"
 
@@ -107,6 +108,7 @@ func processNest(info *Info, log string) {
 	attributes := new(Attributes)
 	err := yaml.Unmarshal([]byte(ymlBlock), &attributes)
 	if err != nil {
+		clipboard.WriteAll(ymlBlock)
 		print(ymlBlock)
 		panic(err)
 	}
