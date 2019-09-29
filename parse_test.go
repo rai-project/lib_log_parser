@@ -20,3 +20,10 @@ func TestParseToCSV(t *testing.T) {
 
 	info.ToCSV("_fixtures/alexnet_cudnn.csv")
 }
+
+func TestParseToJSON(t *testing.T) {
+	info, err := Parse(alexnetTestData)
+	assert.NoError(t, err)
+
+	info.ToJSON("_fixtures/alexnet_cudnn.json")
+}

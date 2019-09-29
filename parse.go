@@ -1,6 +1,7 @@
 package cudnn_log_parser
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -170,6 +171,13 @@ func toInfos(log string) (Infos, error) {
 	}
 	if nst != "" {
 		processNest(&currentInfo, nst)
+		if currentInfo.Attributes == nil {
+			currentInfo.Attributes = new(Attributes)
+		}
+		(*currentInfo.Attributes)["FunctionKind"] = currentInfo.FunctionKind
+		(*currentInfo.Attributes)["FunctionName"] = currentInfo.FunctionName
+		(*currentInfo.Attributes)["Duration"] = currentInfo.Duration
+		(*currentInfo.Attributes)["TimeStamp"] = currentInfo.TimeStamp
 	}
 	infos = append(infos, currentInfo)
 	return infos, nil
@@ -193,6 +201,14 @@ func (infos Infos) ToCSV(filename string) error {
 	}
 	defer cvsFile.Close()
 	return gocsv.MarshalFile(infos, cvsFile)
+}
+
+func (infos Infos) ToJSON(filename string) error {
+	bts, err := json.MarshalIndent(infos, "", " ")
+	if err != nil {
+		panic(err)
+	}
+	return com.WriteFile(filename, bts)
 }
 
 func ParseBlock(log string) (Infos, error) {
