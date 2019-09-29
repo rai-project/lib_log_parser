@@ -8,6 +8,7 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/spf13/cast"
+	"github.com/iancoleman/strcase"
 )
 
 type Duration time.Duration
@@ -40,7 +41,18 @@ func (attrs0 *Attributes) MarshalJSON() ([]byte, error) {
 		case map[interface{}]interface{}:
 			mp := make(Attributes)
 			for k, v := range value {
-				mp[cast.ToString(k)] = v
+				mp[strcase.ToSnake(cast.ToString(k))] = v
+			}
+			// pp.Println(mp)
+			jsonValue, err = json.Marshal(&mp)
+			if err != nil {
+				panic(err)
+				return nil, err
+			}
+		case map[interface{}]string:
+			mp := make(Attributes)
+			for k, v := range value {
+				mp[strcase.ToSnake(cast.ToString(k))] = v
 			}
 			// pp.Println(mp)
 			jsonValue, err = json.Marshal(&mp)
@@ -55,7 +67,7 @@ func (attrs0 *Attributes) MarshalJSON() ([]byte, error) {
 				return nil, err
 			}
 		}
-		buffer.WriteString(fmt.Sprintf("\"%s\":%s", cast.ToString(key), cast.ToString(jsonValue)))
+		buffer.WriteString(fmt.Sprintf("\"%s\":%s", strcase.ToSnake(cast.ToString(key)), cast.ToString(jsonValue)))
 		count++
 		if count < length {
 			buffer.WriteString(",")

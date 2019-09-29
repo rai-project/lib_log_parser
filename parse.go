@@ -19,6 +19,7 @@ import (
 	"github.com/Unknwon/com"
 	"github.com/cydev/zero"
 	"github.com/pkg/errors"
+	"github.com/iancoleman/strcase"
 )
 
 var verboseDebug = false
@@ -174,10 +175,10 @@ func toInfos(log string) (Infos, error) {
 		if currentInfo.Attributes == nil {
 			currentInfo.Attributes = new(Attributes)
 		}
-		(*currentInfo.Attributes)["FunctionKind"] = currentInfo.FunctionKind
-		(*currentInfo.Attributes)["FunctionName"] = currentInfo.FunctionName
-		(*currentInfo.Attributes)["Duration"] = currentInfo.Duration
-		(*currentInfo.Attributes)["TimeStamp"] = currentInfo.TimeStamp
+		(*currentInfo.Attributes)[strcase.ToSnake("FunctionKind")] = currentInfo.FunctionKind
+		(*currentInfo.Attributes)[strcase.ToSnake("FunctionName")] = currentInfo.FunctionName
+		(*currentInfo.Attributes)[strcase.ToSnake("Duration")] = currentInfo.Duration
+		(*currentInfo.Attributes)[strcase.ToSnake("TimeStamp")] = currentInfo.TimeStamp
 	}
 	infos = append(infos, currentInfo)
 	return infos, nil

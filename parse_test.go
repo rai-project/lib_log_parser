@@ -27,3 +27,17 @@ func TestParseToJSON(t *testing.T) {
 
 	info.ToJSON("_fixtures/alexnet_cudnn.json")
 }
+
+func TestParseToCSV2(t *testing.T) {
+	info, err := Parse(alexnetTestData)
+	assert.NoError(t, err)
+
+	info.ToCSV("_fixtures/11_1.csv")
+}
+
+func TestParseToJSON2(t *testing.T) {
+	info, err := Parse(alexnetTestData)
+	assert.NoError(t, err)
+
+	info.ToJSON("_fixtures/11_1.json")
+}
